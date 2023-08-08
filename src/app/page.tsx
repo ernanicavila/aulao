@@ -1,95 +1,85 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client';
+import { useQuery } from '@tanstack/react-query';
+import React from 'react';
+import characterService from '@/services/characterService';
 
+type Err = {
+	response?: {
+		data?: {
+			message?: string;
+		};
+	};
+};
 export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+	const [filtro, setFiltro] = React.useState('');
+	const [select, setSelect] = React.useState('');
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+	const { data, isLoading, error, refetch } = useQuery({
+		queryKey: ['Personagens'],
+		queryFn: () => characterService.getAll(filtro, select),
+		select: ({ data }) => data,
+		retry: false,
+	});
+	const handleClick = (e) => {
+		e.preventDefault();
+		refetch();
+	};
 
-      <div className={styles.grid}>
-        <a
-          href="https://beta.nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+	console.log(error);
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+	return (
+		<>
+			<h1>Aula</h1>
+			<form action="">
+				<input
+					type="text"
+					value={filtro}
+					onChange={({ target: { value } }) => setFiltro(value)}
+				/>
+				<select
+					name=""
+					id=""
+					value={select}
+					placeholder="Escolha"
+					onChange={({ target: { value } }) => setSelect(value)}
+				>
+					<option value="" disabled selected>
+						Select
+					</option>
+					<option value="alive">Vivo</option>
+					<option value="dead">Morto</option>
+					<option value="unknown">Desconhecido</option>
+				</select>
+				<button type="button" onClick={handleClick}>
+					Enviar
+				</button>
+			</form>
+			<br />
+			{error && error?.response?.data?.error}
+			{isLoading ? (
+				'Carregando...'
+			) : (
+				<>
+					{/* Total characters: {data.info.count} */}
+					{data?.results.map((el) => (
+						<div
+							style={{
+								display: 'flex',
+								width: '300px',
+								justifyContent: 'space-between',
+								border: '1px solid black',
+								margin: '8px',
+								padding: '8px',
+								color: 'white',
+							}}
+							key={el.id}
+						>
+							<p>{el.name}</p>
+							<p>{el.status}</p>
+						</div>
+					))}
+				</>
+			)}
+		</>
+	);
 }
