@@ -1,18 +1,24 @@
 'use client';
 import { useQuery } from '@tanstack/react-query';
-import React from 'react';
+import React, { useState } from 'react';
 import characterService from '@/services/characterService';
 
 type Err = {
-	response?: {
-		data?: {
-			message?: string;
+	response: {
+		data: {
+			error: string;
 		};
 	};
 };
+
+type Characters = {
+	id: number;
+	name: string;
+	status: string;
+};
 export default function Home() {
-	const [filtro, setFiltro] = React.useState('');
-	const [select, setSelect] = React.useState('');
+	const [filtro, setFiltro] = useState<string>('');
+	const [select, setSelect] = useState<string>('');
 
 	const { data, isLoading, error, refetch } = useQuery({
 		queryKey: ['Personagens'],
@@ -20,12 +26,11 @@ export default function Home() {
 		select: ({ data }) => data,
 		retry: false,
 	});
-	const handleClick = (e) => {
+
+	const handleClick = (e: React.MouseEvent<HTMLElement>) => {
 		e.preventDefault();
 		refetch();
 	};
-
-	console.log(error);
 
 	return (
 		<>
@@ -37,13 +42,11 @@ export default function Home() {
 					onChange={({ target: { value } }) => setFiltro(value)}
 				/>
 				<select
-					name=""
-					id=""
 					value={select}
 					placeholder="Escolha"
 					onChange={({ target: { value } }) => setSelect(value)}
 				>
-					<option value="" disabled selected>
+					<option disabled selected>
 						Select
 					</option>
 					<option value="alive">Vivo</option>
@@ -55,29 +58,38 @@ export default function Home() {
 				</button>
 			</form>
 			<br />
-			{error && error?.response?.data?.error}
-			{isLoading ? (
-				'Carregando...'
+			{error ? (
+				<>
+					<p style={{ color: 'red' }}>
+						{(error as Err)?.response?.data?.error}
+					</p>
+				</>
 			) : (
 				<>
-					{/* Total characters: {data.info.count} */}
-					{data?.results.map((el) => (
-						<div
-							style={{
-								display: 'flex',
-								width: '300px',
-								justifyContent: 'space-between',
-								border: '1px solid black',
-								margin: '8px',
-								padding: '8px',
-								color: 'white',
-							}}
-							key={el.id}
-						>
-							<p>{el.name}</p>
-							<p>{el.status}</p>
-						</div>
-					))}
+					{isLoading ? (
+						'Carregando...'
+					) : (
+						<>
+							Total characters: {data.info.count}
+							{data?.results.map((el: Characters) => (
+								<div
+									style={{
+										display: 'flex',
+										width: '300px',
+										justifyContent: 'space-between',
+										border: '1px solid black',
+										margin: '8px',
+										padding: '8px',
+										color: 'white',
+									}}
+									key={el.id}
+								>
+									<p>{el.name}</p>
+									<p>{el.status}</p>
+								</div>
+							))}
+						</>
+					)}
 				</>
 			)}
 		</>
