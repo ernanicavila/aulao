@@ -25,6 +25,7 @@ export default function Home() {
 		queryFn: () => characterService.getAll(filtro, select),
 		select: ({ data }) => data,
 		retry: false,
+		refetchOnWindowFocus: false,
 	});
 
 	const handleClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -46,7 +47,7 @@ export default function Home() {
 					placeholder="Escolha"
 					onChange={({ target: { value } }) => setSelect(value)}
 				>
-					<option disabled selected>
+					<option defaultValue="">
 						Select
 					</option>
 					<option value="alive">Vivo</option>
